@@ -1,4 +1,4 @@
-name: Notebook Test and build Workflow
+name: Notebook Test and Build Workflow
 
 on:
   push:
@@ -41,7 +41,7 @@ jobs:
     - name: Create h5ad cache directory
       run: mkdir -p h5ad_cache
 
-    - name: Find and run notebooks
+    - name: Find, run, and convert notebooks to PDF
       run: |
         source venv/bin/activate
         FAILED_NOTEBOOKS=()
@@ -50,6 +50,10 @@ jobs:
           output_notebook="${notebook%.ipynb}_output.ipynb"
           if ! jupyter nbconvert --to notebook --execute "$notebook" --output "$output_notebook"; then
             FAILED_NOTEBOOKS+=("$output_notebook")
+          else
+            echo "Converting $output_notebook to PDF"
+            pdf_output="${notebook%.ipynb}.pdf"
+            jupyter nbconvert --to pdf "$output_notebook" --output "$pdf_output"
           fi
         done
         if [ ${#FAILED_NOTEBOOKS[@]} -ne 0 ]; then
